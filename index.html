@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImóvelAdmin — Painel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Tokens ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #151820;
+      --surface2:  #1c2030;
+      --border:    #252a3a;
+      --accent:    #e8a838;
+      --accent2:   #f0c06a;
+      --text:      #e8eaf0;
+      --muted:     #6b7280;
+      --danger:    #ef4444;
+      --success:   #22c55e;
+      --info:      #3b82f6;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(0,0,0,.4);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Login Screen ───────────────────────────────── */
+    #loginScreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 70% 50% at 20% 30%, rgba(232,168,56,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 70%, rgba(59,130,246,.08) 0%, transparent 60%),
+        var(--bg);
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow);
+    }
+
+    .login-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -1px;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 36px;
+    }
+
+    /* ── Form Elements ──────────────────────────────── */
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 10px 14px;
+      transition: border-color .2s;
+      outline: none;
+    }
+
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .field textarea { resize: vertical; min-height: 80px; }
+    .field select option { background: var(--surface2); }
+
+    /* ── Buttons ────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn:hover  { opacity: .88; }
+
+    .btn-primary  { background: var(--accent); color: #0d0f14; font-weight: 700; }
+    .btn-ghost    { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-danger   { background: var(--danger); color: #fff; }
+    .btn-success  { background: var(--success); color: #fff; }
+    .btn-sm       { padding: 6px 12px; font-size: 12px; }
+    .btn-full     { width: 100%; justify-content: center; padding: 13px; font-size: 15px; }
+
+    /* ── App Shell ──────────────────────────────────── */
+    #app { display: none; }
+
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 240px;
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -1px;
+      margin-bottom: 36px;
+      padding-left: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      margin-bottom: 4px;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover  { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(232,168,56,.15); color: var(--accent); }
+    .nav-item .icon  { font-size: 16px; }
+
+    .sidebar-footer { margin-top: auto; }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .user-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0d0f14;
+      flex-shrink: 0;
+    }
+
+    .user-name { font-size: 13px; font-weight: 500; }
+    .user-role { font-size: 11px; color: var(--muted); }
+
+    .main {
+      margin-left: 240px;
+      padding: 32px 36px;
+      min-height: 100vh;
+    }
+
+    /* ── Page Header ────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -.5px;
+    }
+
+    /* ── Stat Cards ─────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--accent);
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+    .stat-value { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; color: var(--accent); }
+    .stat-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Table ──────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .filter-bar {
+      padding: 16px 22px;
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .filter-bar input, .filter-bar select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent); }
+    .filter-bar input { flex: 1; min-width: 160px; }
+    .filter-bar select option { background: var(--surface2); }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--surface2); }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    td {
+      padding: 13px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-blue   { background: rgba(59,130,246,.18);  color: #93c5fd; }
+    .badge-green  { background: rgba(34,197,94,.18);   color: #86efac; }
+    .badge-orange { background: rgba(232,168,56,.18);  color: var(--accent2); }
+    .badge-red    { background: rgba(239,68,68,.18);   color: #fca5a5; }
+    .badge-purple { background: rgba(168,85,247,.18);  color: #d8b4fe; }
+
+    .actions { display: flex; gap: 6px; }
+
+    /* ── Modal ──────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp .2s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+    /* ── Confirm Dialog ─────────────────────────────── */
+    .confirm-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 28px;
+      max-width: 380px;
+      text-align: center;
+      animation: slideUp .2s ease;
+    }
+
+    .confirm-icon { font-size: 40px; margin-bottom: 12px; }
+    .confirm-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .confirm-msg { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+    .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+    /* ── Toast ──────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .3s;
+      pointer-events: none;
+      max-width: 320px;
+    }
+
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { border-color: var(--success); color: var(--success); }
+    #toast.error   { border-color: var(--danger);  color: var(--danger);  }
+
+    /* ── Loading ────────────────────────────────────── */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      color: var(--muted);
+      font-size: 14px;
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty {
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .empty .empty-icon { font-size: 36px; margin-bottom: 8px; }
+
+    /* ── Thumbnail ──────────────────────────────────── */
+    .thumb {
+      width: 44px; height: 34px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .price { font-weight: 600; color: var(--accent2); }
+
+    /* ── Page sections ──────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Scrollbar ──────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ LOGIN ═════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🏠 ImóvelAdmin</div>
+    <div class="login-sub">Painel Administrativo</div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="admin@imobiliaria.com" />
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="loginSenha" placeholder="••••••••" />
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="fazerLogin()">Entrar</button>
+    <div id="loginErro" style="color:var(--danger);font-size:13px;margin-top:12px;text-align:center;display:none;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ APP ═══════════════════════════ -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">🏠 ImóvelAdmin</div>
+
+    <nav>
+      <button class="nav-item active" onclick="navegarPara('dashboard')">
+        <span class="icon">📊</span> Dashboard
+      </button>
+      <button class="nav-item" onclick="navegarPara('imoveis')">
+        <span class="icon">🏠</span> Imóveis
+      </button>
+      <button class="nav-item" onclick="navegarPara('clientes')">
+        <span class="icon">👤</span> Clientes
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role">Administrador</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;" onclick="sair()">Sair</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- ── Dashboard ── -->
+    <div id="pageDashboard" class="page active">
+      <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <span style="color:var(--muted);font-size:13px;" id="dataHoje"></span>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total de Imóveis</div>
+          <div class="stat-value" id="statImoveis">—</div>
+          <div class="stat-sub">cadastrados ativos</div>
+        </div>
+        <div class="stat-card" style="--accent:#3b82f6;">
+          <div class="stat-label">Total de Clientes</div>
+          <div class="stat-value" id="statClientes" style="color:var(--info);">—</div>
+          <div class="stat-sub">interessados</div>
+        </div>
+        <div class="stat-card" style="--accent:#22c55e;">
+          <div class="stat-label">Preço Médio</div>
+          <div class="stat-value" id="statPrecoMedio" style="color:var(--success);font-size:26px;">—</div>
+          <div class="stat-sub">dos imóveis</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Últimos Imóveis</span>
+            <button class="btn btn-ghost btn-sm" onclick="navegarPara('imoveis')">Ver todos</button>
+          </div>
+          <div id="dashUltimosImoveis"><div class="loading"><div class="spinner"></div> Carregando...</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Últimos Clientes</span>
+            <button class="btn btn-ghost btn-sm" onclick="navegarPara('clientes')">Ver todos</button>
+          </div>
+          <div id="dashUltimosClientes"><div class="loading"><div class="spinner"></div> Carregando...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Imóveis ── -->
+    <div id="pageImoveis" class="page">
+      <div class="page-header">
+        <h1 class="page-title">Imóveis</h1>
+        <button class="btn btn-primary" onclick="abrirModalImovel()">+ Novo Imóvel</button>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <input type="text" id="filtroNome" placeholder="🔍 Buscar por nome..." oninput="filtrarImoveis()" />
+          <input type="text" id="filtroCidade" placeholder="🏙 Filtrar cidade..." oninput="filtrarImoveis()" />
+          <select id="filtroOrdem" onchange="filtrarImoveis()">
+            <option value="">Ordenar por</option>
+            <option value="preco_asc">Preço ↑</option>
+            <option value="preco_desc">Preço ↓</option>
+          </select>
+        </div>
+        <div id="tabelaImoveis"><div class="loading"><div class="spinner"></div> Carregando...</div></div>
+      </div>
+    </div>
+
+    <!-- ── Clientes ── -->
+    <div id="pageClientes" class="page">
+      <div class="page-header">
+        <h1 class="page-title">Clientes</h1>
+        <button class="btn btn-primary" onclick="abrirModalCliente()">+ Novo Cliente</button>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <input type="text" id="filtroCliente" placeholder="🔍 Buscar por nome ou email..." oninput="filtrarClientes()" />
+        </div>
+        <div id="tabelaClientes"><div class="loading"><div class="spinner"></div> Carregando...</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════ MODAL IMÓVEL ═════════════════ -->
+<div class="modal-overlay" id="modalImovel">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalImovelTitulo">Novo Imóvel</span>
+      <button class="modal-close" onclick="fecharModal('modalImovel')">✕</button>
+    </div>
+
+    <input type="hidden" id="imovelId" />
+
+    <div class="form-row">
+      <div class="field" style="grid-column:1/-1;">
+        <label>Título *</label>
+        <input type="text" id="imovelTitulo" placeholder="Ex: Casa com piscina no Alphaville" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Preço (R$) *</label>
+        <input type="number" id="imovelPreco" placeholder="0" />
+      </div>
+      <div class="field">
+        <label>Cidade *</label>
+        <input type="text" id="imovelCidade" placeholder="São Paulo" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Tipo *</label>
+        <select id="imovelTipo">
+          <option value="">Selecione...</option>
+          <option>Casa</option>
+          <option>Apartamento</option>
+          <option>Terreno</option>
+          <option>Comercial</option>
+          <option>Chácara</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Quartos</label>
+        <input type="number" id="imovelQuartos" placeholder="0" min="0" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Banheiros</label>
+        <input type="number" id="imovelBanheiros" placeholder="0" min="0" />
+      </div>
+      <div class="field">
+        <label>URL da Imagem</label>
+        <input type="url" id="imovelImagem" placeholder="https://..." />
+      </div>
+    </div>
+    <div class="field">
+      <label>Descrição</label>
+      <textarea id="imovelDescricao" placeholder="Descreva o imóvel..."></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="fecharModal('modalImovel')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarImovel()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MODAL CLIENTE ═══════════════ -->
+<div class="modal-overlay" id="modalCliente">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalClienteTitulo">Novo Cliente</span>
+      <button class="modal-close" onclick="fecharModal('modalCliente')">✕</button>
+    </div>
+
+    <input type="hidden" id="clienteId" />
+
+    <div class="form-row">
+      <div class="field" style="grid-column:1/-1;">
+        <label>Nome *</label>
+        <input type="text" id="clienteNome" placeholder="Nome completo" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Email *</label>
+        <input type="email" id="clienteEmail" placeholder="email@exemplo.com" />
+      </div>
+      <div class="field">
+        <label>Telefone</label>
+        <input type="text" id="clienteTelefone" placeholder="(11) 99999-9999" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Imóvel de Interesse</label>
+      <select id="clienteImovelInteresse">
+        <option value="">Nenhum selecionado</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Observações</label>
+      <textarea id="clienteObservacoes" placeholder="Anotações sobre o cliente..."></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="fecharModal('modalCliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCliente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ CONFIRM ═══════════════════════ -->
+<div class="modal-overlay" id="modalConfirm">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">Confirmar exclusão</div>
+    <div class="confirm-msg" id="confirmMsg">Tem certeza? Esta ação não pode ser desfeita.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="fecharModal('modalConfirm')">Cancelar</button>
+      <button class="btn btn-danger" id="confirmBtn">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ TOAST ════════════════════════ -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
+<script>
+  // ── Config ──────────────────────────────────────────────
+  const API = 'http://localhost:5000/api'; // Altere para sua URL
+  let TOKEN   = localStorage.getItem('imovelToken') || '';
+  let imoveis = [];
+  let clientes = [];
+
+  // ── Init ─────────────────────────────────────────────────
+  window.onload = () => {
+    document.getElementById('dataHoje').textContent =
+      new Date().toLocaleDateString('pt-BR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    if (TOKEN) iniciarApp();
+    else mostrarLogin();
+  };
+
+  // ── Auth ─────────────────────────────────────────────────
+  async function fazerLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const senha = document.getElementById('loginSenha').value;
+
+    if (!email || !senha) { mostrarErroLogin('Preencha email e senha'); return; }
+
+    try {
+      const res  = await fetchAPI('/auth/login', 'POST', { email, senha }, false);
+      TOKEN = res.token;
+      localStorage.setItem('imovelToken', TOKEN);
+
+      const u = res.usuario;
+      document.getElementById('userName').textContent   = u.nome;
+      document.getElementById('userAvatar').textContent = u.nome.charAt(0).toUpperCase();
+
+      mostrarErroLogin('');
+      iniciarApp();
+    } catch (e) {
+      mostrarErroLogin(e.message || 'Credenciais inválidas');
+    }
+  }
+
+  function mostrarErroLogin(msg) {
+    const el = document.getElementById('loginErro');
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+
+  function sair() {
+    localStorage.removeItem('imovelToken');
+    TOKEN = '';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+
+  function mostrarLogin() {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+
+  function iniciarApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    carregarDashboard();
+    carregarImoveis();
+    carregarClientes();
+  }
+
+  // ── Navegação ────────────────────────────────────────────
+  function navegarPara(pagina) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    document.getElementById('page' + pagina.charAt(0).toUpperCase() + pagina.slice(1)).classList.add('active');
+
+    const navMap = { dashboard: 0, imoveis: 1, clientes: 2 };
+    document.querySelectorAll('.nav-item')[navMap[pagina]]?.classList.add('active');
+  }
+
+  // ── API Helper ───────────────────────────────────────────
+  async function fetchAPI(path, method = 'GET', body = null, auth = true) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (auth) headers['Authorization'] = 'Bearer ' + TOKEN;
+
+    const opts = { method, headers };
+    if (body) opts.body = JSON.stringify(body);
+
+    const res  = await fetch(API + path, opts);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || 'Erro na requisição');
+    return data;
+  }
+
+  // ── Dashboard ────────────────────────────────────────────
+  async function carregarDashboard() {
+    try {
+      const [resImoveis, resClientes] = await Promise.all([
+        fetchAPI('/imoveis/stats/resumo'),
+        fetchAPI('/clientes/stats/resumo'),
+      ]);
+
+      document.getElementById('statImoveis').textContent  = resImoveis.totalImoveis;
+      document.getElementById('statClientes').textContent = resClientes.totalClientes;
+      document.getElementById('statPrecoMedio').textContent =
+        formatarPreco(resImoveis.precoMedio);
+
+      // Últimos imóveis
+      const uiEl = document.getElementById('dashUltimosImoveis');
+      if (resImoveis.ultimosImoveis.length === 0) {
+        uiEl.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div>Nenhum imóvel ainda</div>';
+      } else {
+        uiEl.innerHTML = `<table>
+          <thead><tr><th>Título</th><th>Cidade</th><th>Preço</th></tr></thead>
+          <tbody>${resImoveis.ultimosImoveis.map(i => `
+            <tr>
+              <td>${i.titulo}</td>
+              <td>${i.cidade}</td>
+              <td class="price">${formatarPreco(i.preco)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+      }
+
+      // Últimos clientes
+      const ucEl = document.getElementById('dashUltimosClientes');
+      if (resClientes.ultimosClientes.length === 0) {
+        ucEl.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Nenhum cliente ainda</div>';
+      } else {
+        ucEl.innerHTML = `<table>
+          <thead><tr><th>Nome</th><th>Interesse</th></tr></thead>
+          <tbody>${resClientes.ultimosClientes.map(c => `
+            <tr>
+              <td>${c.nome}</td>
+              <td>${c.imovelInteresse?.titulo || '<span style="color:var(--muted)">—</span>'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // ── Imóveis ──────────────────────────────────────────────
+  async function carregarImoveis() {
+    const el = document.getElementById('tabelaImoveis');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div> Carregando...</div>';
+
+    try {
+      const res = await fetchAPI('/imoveis');
+      imoveis = res.imoveis;
+      renderizarImoveis(imoveis);
+    } catch (e) {
+      el.innerHTML = `<div class="empty">Erro ao carregar: ${e.message}</div>`;
+    }
+  }
+
+  function filtrarImoveis() {
+    const nome   = document.getElementById('filtroNome').value.toLowerCase();
+    const cidade = document.getElementById('filtroCidade').value.toLowerCase();
+    const ordem  = document.getElementById('filtroOrdem').value;
+
+    let lista = imoveis.filter(i =>
+      i.titulo.toLowerCase().includes(nome) &&
+      i.cidade.toLowerCase().includes(cidade)
+    );
+
+    if (ordem === 'preco_asc')  lista.sort((a, b) => a.preco - b.preco);
+    if (ordem === 'preco_desc') lista.sort((a, b) => b.preco - a.preco);
+
+    renderizarImoveis(lista);
+  }
+
+  function renderizarImoveis(lista) {
+    const el = document.getElementById('tabelaImoveis');
+
+    if (lista.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div>Nenhum imóvel encontrado</div>';
+      return;
+    }
+
+    const tipoCores = {
+      Casa: 'badge-green', Apartamento: 'badge-blue', Terreno: 'badge-orange',
+      Comercial: 'badge-purple', Chácara: 'badge-green', Outro: 'badge-red',
+    };
+
+    el.innerHTML = `<table>
+      <thead>
+        <tr>
+          <th>Imagem</th>
+          <th>Título</th>
+          <th>Tipo</th>
+          <th>Cidade</th>
+          <th>Quartos</th>
+          <th>Preço</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${lista.map(i => `
+          <tr>
+            <td>
+              ${i.imagem
+                ? `<img class="thumb" src="${i.imagem}" alt="${i.titulo}" onerror="this.style.display='none'" />`
+                : `<div class="thumb" style="display:inline-flex;align-items:center;justify-content:center;font-size:18px">🏠</div>`}
+            </td>
+            <td style="font-weight:500">${i.titulo}</td>
+            <td><span class="badge ${tipoCores[i.tipo] || 'badge-blue'}">${i.tipo}</span></td>
+            <td>${i.cidade}</td>
+            <td>${i.quartos || '—'}</td>
+            <td class="price">${formatarPreco(i.preco)}</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-ghost btn-sm" onclick="editarImovel('${i._id}')">✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="confirmarExclusao('imovel','${i._id}','${i.titulo.replace(/'/g,"\\'")}')">🗑️</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  function abrirModalImovel(id = null) {
+    document.getElementById('imovelId').value = '';
+    document.getElementById('imovelTitulo').value    = '';
+    document.getElementById('imovelPreco').value     = '';
+    document.getElementById('imovelCidade').value    = '';
+    document.getElementById('imovelTipo').value      = '';
+    document.getElementById('imovelQuartos').value   = '';
+    document.getElementById('imovelBanheiros').value = '';
+    document.getElementById('imovelImagem').value    = '';
+    document.getElementById('imovelDescricao').value = '';
+    document.getElementById('modalImovelTitulo').textContent = 'Novo Imóvel';
+    abrirModal('modalImovel');
+  }
+
+  async function editarImovel(id) {
+    try {
+      const i = await fetchAPI('/imoveis/' + id);
+      document.getElementById('imovelId').value        = i._id;
+      document.getElementById('imovelTitulo').value    = i.titulo;
+      document.getElementById('imovelPreco').value     = i.preco;
+      document.getElementById('imovelCidade').value    = i.cidade;
+      document.getElementById('imovelTipo').value      = i.tipo;
+      document.getElementById('imovelQuartos').value   = i.quartos || '';
+      document.getElementById('imovelBanheiros').value = i.banheiros || '';
+      document.getElementById('imovelImagem').value    = i.imagem || '';
+      document.getElementById('imovelDescricao').value = i.descricao || '';
+      document.getElementById('modalImovelTitulo').textContent = 'Editar Imóvel';
+      abrirModal('modalImovel');
+    } catch (e) {
+      toast('Erro ao carregar imóvel', 'error');
+    }
+  }
+
+  async function salvarImovel() {
+    const id = document.getElementById('imovelId').value;
+    const payload = {
+      titulo:    document.getElementById('imovelTitulo').value.trim(),
+      preco:     parseFloat(document.getElementById('imovelPreco').value),
+      cidade:    document.getElementById('imovelCidade').value.trim(),
+      tipo:      document.getElementById('imovelTipo').value,
+      quartos:   parseInt(document.getElementById('imovelQuartos').value) || 0,
+      banheiros: parseInt(document.getElementById('imovelBanheiros').value) || 0,
+      imagem:    document.getElementById('imovelImagem').value.trim(),
+      descricao: document.getElementById('imovelDescricao').value.trim(),
+    };
+
+    if (!payload.titulo || !payload.preco || !payload.cidade || !payload.tipo) {
+      toast('Preencha os campos obrigatórios', 'error'); return;
+    }
+
+    try {
+      if (id) {
+        await fetchAPI('/imoveis/' + id, 'PUT', payload);
+        toast('Imóvel atualizado! ✅', 'success');
+      } else {
+        await fetchAPI('/imoveis', 'POST', payload);
+        toast('Imóvel criado! ✅', 'success');
+      }
+      fecharModal('modalImovel');
+      carregarImoveis();
+      carregarDashboard();
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  }
+
+  // ── Clientes ─────────────────────────────────────────────
+  async function carregarClientes() {
+    const el = document.getElementById('tabelaClientes');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div> Carregando...</div>';
+
+    try {
+      const res = await fetchAPI('/clientes');
+      clientes = res.clientes;
+      renderizarClientes(clientes);
+    } catch (e) {
+      el.innerHTML = `<div class="empty">Erro ao carregar: ${e.message}</div>`;
+    }
+  }
+
+  function filtrarClientes() {
+    const busca = document.getElementById('filtroCliente').value.toLowerCase();
+    const lista = clientes.filter(c =>
+      c.nome.toLowerCase().includes(busca) ||
+      c.email.toLowerCase().includes(busca)
+    );
+    renderizarClientes(lista);
+  }
+
+  function renderizarClientes(lista) {
+    const el = document.getElementById('tabelaClientes');
+
+    if (lista.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Nenhum cliente encontrado</div>';
+      return;
+    }
+
+    el.innerHTML = `<table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Telefone</th>
+          <th>Imóvel de Interesse</th>
+          <th>Cadastro</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${lista.map(c => `
+          <tr>
+            <td style="font-weight:500">${c.nome}</td>
+            <td style="color:var(--muted)">${c.email}</td>
+            <td>${c.telefone || '<span style="color:var(--muted)">—</span>'}</td>
+            <td>${c.imovelInteresse
+              ? `<span class="badge badge-blue">${c.imovelInteresse.titulo}</span>`
+              : '<span style="color:var(--muted)">—</span>'}</td>
+            <td style="color:var(--muted);font-size:12px">${formatarData(c.createdAt)}</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-ghost btn-sm" onclick="editarCliente('${c._id}')">✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="confirmarExclusao('cliente','${c._id}','${c.nome.replace(/'/g,"\\'")}')">🗑️</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  async function abrirModalCliente() {
+    document.getElementById('clienteId').value          = '';
+    document.getElementById('clienteNome').value        = '';
+    document.getElementById('clienteEmail').value       = '';
+    document.getElementById('clienteTelefone').value    = '';
+    document.getElementById('clienteObservacoes').value = '';
+    document.getElementById('modalClienteTitulo').textContent = 'Novo Cliente';
+
+    await preencherSelectImoveis();
+    abrirModal('modalCliente');
+  }
+
+  async function editarCliente(id) {
+    try {
+      const c = await fetchAPI('/clientes/' + id);
+      document.getElementById('clienteId').value          = c._id;
+      document.getElementById('clienteNome').value        = c.nome;
+      document.getElementById('clienteEmail').value       = c.email;
+      document.getElementById('clienteTelefone').value    = c.telefone || '';
+      document.getElementById('clienteObservacoes').value = c.observacoes || '';
+      document.getElementById('modalClienteTitulo').textContent = 'Editar Cliente';
+
+      await preencherSelectImoveis(c.imovelInteresse?._id);
+      abrirModal('modalCliente');
+    } catch (e) {
+      toast('Erro ao carregar cliente', 'error');
+    }
+  }
+
+  async function preencherSelectImoveis(selecionadoId = '') {
+    const sel = document.getElementById('clienteImovelInteresse');
+    sel.innerHTML = '<option value="">Nenhum selecionado</option>';
+
+    try {
+      const res = await fetchAPI('/imoveis?limite=100');
+      res.imoveis.forEach(i => {
+        const opt = document.createElement('option');
+        opt.value = i._id;
+        opt.textContent = `${i.titulo} — ${i.cidade}`;
+        if (i._id === selecionadoId) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    } catch {}
+  }
+
+  async function salvarCliente() {
+    const id = document.getElementById('clienteId').value;
+    const payload = {
+      nome:             document.getElementById('clienteNome').value.trim(),
+      email:            document.getElementById('clienteEmail').value.trim(),
+      telefone:         document.getElementById('clienteTelefone').value.trim(),
+      imovelInteresse:  document.getElementById('clienteImovelInteresse').value || null,
+      observacoes:      document.getElementById('clienteObservacoes').value.trim(),
+    };
+
+    if (!payload.nome || !payload.email) {
+      toast('Nome e email são obrigatórios', 'error'); return;
+    }
+
+    try {
+      if (id) {
+        await fetchAPI('/clientes/' + id, 'PUT', payload);
+        toast('Cliente atualizado! ✅', 'success');
+      } else {
+        await fetchAPI('/clientes', 'POST', payload);
+        toast('Cliente cadastrado! ✅', 'success');
+      }
+      fecharModal('modalCliente');
+      carregarClientes();
+      carregarDashboard();
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  }
+
+  // ── Exclusão ─────────────────────────────────────────────
+  function confirmarExclusao(tipo, id, nome) {
+    document.getElementById('confirmMsg').textContent =
+      `Tem certeza que deseja excluir "${nome}"? Esta ação não pode ser desfeita.`;
+
+    document.getElementById('confirmBtn').onclick = async () => {
+      try {
+        if (tipo === 'imovel') {
+          await fetchAPI('/imoveis/' + id, 'DELETE');
+          toast('Imóvel excluído!', 'success');
+          carregarImoveis();
+        } else {
+          await fetchAPI('/clientes/' + id, 'DELETE');
+          toast('Cliente excluído!', 'success');
+          carregarClientes();
+        }
+        fecharModal('modalConfirm');
+        carregarDashboard();
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    };
+
+    abrirModal('modalConfirm');
+  }
+
+  // ── Modal helpers ────────────────────────────────────────
+  function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
+  function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  // Fechar modal clicando fora
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
+  // Enter no login
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none')
+      fazerLogin();
+  });
+
+  // ── Toast ────────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg, tipo = 'success') {
+    const el = document.getElementById('toast');
+    el.textContent = (tipo === 'success' ? '✅ ' : '❌ ') + msg;
+    el.className = 'show ' + tipo;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+  }
+
+  // ── Helpers ──────────────────────────────────────────────
+  function formatarPreco(v) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v || 0);
+  }
+
+  function formatarData(d) {
+    return new Date(d).toLocaleDateString('pt-BR');
+  }
+</script>
+</body>
+</html>
